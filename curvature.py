@@ -14,10 +14,10 @@ def hist(image):
     return hist
 
 def sliding_window(img):
-    '''Takes in a binary image and returns sliding windows and x,y coordinates for drawing the lines '''
+    '''Takes in an undistorted image and returns sliding windows and x,y coordinates for drawing the lines '''
     image = combined_thresh(img)
-    image = birdseye(image)
-    histo = hist(image)
+    img1 = birdseye(image)
+    histo = hist(img1)
     # image copy to plot lines on
     img_copy = np.dstack((image,image,image))
     # setup for finding and drawing
@@ -33,7 +33,7 @@ def sliding_window(img):
 
     window_height = np.int(image.shape[0]//nwindows) # height of windows
     # finding coordinates of nonzero pixels in the image
-    nonzeros = image.nonzero()
+    nonzeros = img1.nonzero()
     nonzeroy = np.array(nonzeros[0])
     nonzerox = np.array(nonzeros[1])
     # initializing start positions for the sliding window method
@@ -85,32 +85,32 @@ def sliding_window(img):
     right_x = nonzerox[right_lane_inds]
     right_y = nonzeroy[right_lane_inds]
 
-    return left_x,left_y,right_x,right_y,img_copy
+    return left_x,left_y,right_x,right_y
 
 def draw_polylines(image):
     '''Take in perspective transformed binary image and draw polynomial lines along lanes'''
-    leftx,lefty,rightx,righty,out = sliding_window(image)
+    leftx,lefty,rightx,righty = sliding_window(image)
     # here x is to be found and y is the variable
     left = np.polyfit(lefty,leftx,2)
     right = np.polyfit(righty,rightx,2)
 
     # let ploty be the variable
-    ploty = np.linspace(0,image.shape[0]-1,image.shape[0])
-    try:
-        left_line = left[0]*ploty**2 + left[1]*ploty + left[2]
-        right_line = right[0]*ploty**2 + right[1]*ploty + right[2]
-    except TypeError:
-        print('Function failed to fit a line')
-        left = ploty**2 + ploty
-        right = ploty**2 + ploty
+    # ploty = np.linspace(0,image.shape[0]-1,image.shape[0])
+    # try:
+    #     left_line = left[0]*ploty**2 + left[1]*ploty + left[2]
+    #     right_line = right[0]*ploty**2 + right[1]*ploty + right[2]
+    # except TypeError:
+    #     print('Function failed to fit a line')
+    #     left = ploty**2 + ploty
+    #     right = ploty**2 + ploty
 
-    out[lefty,leftx] = [255,0,0]
-    out[righty,rightx] = [0,0,255]
+    # out[lefty,leftx] = [255,0,0]
+    # out[righty,rightx] = [0,0,255]
 
-    plt.plot(left_line,ploty,color='yellow')
-    plt.plot(right_line,ploty,color='yellow')
+    # plt.plot(left_line,ploty,color='yellow')
+    # plt.plot(right_line,ploty,color='yellow')
 
-    return leftx,lefty,rightx,righty,ploty,out
+    return left,right
 
 def cal_curvature(x_vals,y_vals,ploty):
 

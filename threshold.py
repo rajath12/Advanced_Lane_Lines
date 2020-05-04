@@ -19,7 +19,6 @@ def sobel_calc(image,kernel_size=21):
 
 def sobel_thresh(image,axis,thresh=(20,100)):
     '''Takes in an blurred gray image and gives out a binary thresholded image'''
-    # thresholding implementation for single images
     blur = gray_blur(image)
     sobelx,sobely = sobel_calc(blur,21)
     binary_output = np.uint8(np.zeros_like(blur)//255)
@@ -38,7 +37,6 @@ def sobel_thresh(image,axis,thresh=(20,100)):
 
 def mag_thresh(image,thresh=(20,100)):
     '''Takes in an blurred gray image and returns a magnitude thresholded binary output'''
-    # thresholding implementation for single images
     sobelx,sobely = sobel_calc(image,21)
     blur = gray_blur(image)
     binary_output = np.uint8(np.zeros_like(blur)//255)
@@ -64,14 +62,9 @@ def color_thresh(image,thresh=(60,120)):
     '''take an undistorted image and give a color thresholded image'''
 
     hls = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
-    # h = hls[:,:,0]
-    # l = hls[:,:,1]
-    s = hls[:,:,2]
+    s = hls[:,:,2] # s channel provides consistent results
     copy = np.copy(s)
     copy[(s > thresh[0]) & (s <= thresh[1])] = 1
-    # copy1 = np.copy(h)
-    # copy1[(h >= 15) & (h < 80)] = 1
-    # plt.show()
     return copy
 
 def combined_thresh(image):
