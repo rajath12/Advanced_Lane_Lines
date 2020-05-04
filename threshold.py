@@ -22,7 +22,7 @@ def sobel_thresh(image,axis,thresh=(20,100)):
     # thresholding implementation for single images
     blur = gray_blur(image)
     sobelx,sobely = sobel_calc(blur,21)
-    binary_output = np.zeros_like(blur)
+    binary_output = np.uint8(np.zeros_like(blur)//255)
     # Sobel operations
     threshold = [thresh[0],thresh[1]]
     if axis == 'x':
@@ -41,7 +41,7 @@ def mag_thresh(image,thresh=(20,100)):
     # thresholding implementation for single images
     sobelx,sobely = sobel_calc(image,21)
     blur = gray_blur(image)
-    binary_output = np.zeros_like(blur)
+    binary_output = np.uint8(np.zeros_like(blur)//255)
     threshold = [thresh[0],thresh[1]]
     abso = np.sqrt(sobelx**2 + sobely**2)
     scaled = np.uint8(255*abso/np.max(abso))
@@ -56,7 +56,7 @@ def grad_thresh(image,thresh=(0,np.pi/2)):
     abso_x = np.absolute(sobelx)
     abso_y = np.absolute(sobely)
     grad_sobel = np.arctan2(abso_y,abso_x)
-    binary_output = np.zeros_like(grad_sobel)
+    binary_output = np.uint8(np.zeros_like(grad_sobel)//255)
     binary_output[(grad_sobel >= thresh[0]) & (grad_sobel <= thresh[1])] = 1
     return binary_output
 
@@ -73,3 +73,13 @@ def color_thresh(image,thresh=(60,120)):
     # copy1[(h >= 15) & (h < 80)] = 1
     # plt.show()
     return copy
+
+def combined_thresh(image):
+    '''apply decided thresholds on the undistorted image to get binary output'''
+    img_color = color_thresh(image,(140,255)) # color threshold
+    img_mag = mag_thresh(image,(100,200)) # magnitude threshold
+    img_grad = grad_thresh(image,(0.7,1.1)) # gradient threshold
+    img_comb = np.zeros_like(img_grad)
+    img_comb[((img_color == 1) | (img_mag == 1)) & (img_grad == 1)] = 1 # combined threshold
+
+    return img_comb
