@@ -89,15 +89,14 @@ def process_image(image1):
     result = cv2.addWeighted(new_img, 1, newwarp, 0.5, 0)
 
     # calculate vehicle position from center
-    x_max = new_img.shape[1] * 3.7/200
+    x_max = new_img.shape[1]
     expected_center = x_max/2
-    y_max = y_max * 30/720
-    # calculate image value at the bottom of the image
-    leftvalue = left_fit[0]*y_max**2 + left_fit[1]*y_max + left_fit[2]
-    rightvalue = right_fit[0]*y_max**2 + right_fit[1]*y_max + right_fit[2]
-    veh_center = leftvalue + ((rightvalue - leftvalue)/2)
-    off_center = veh_center - expected_center
-    print(x_max,y_max,expected_center,off_center)
+    veh_center = (left_fit[-1] + right_fit[-1])/2
+    off_center = (veh_center - expected_center) * 3.7/660
+    if off_center < 0:
+        message = 'Vehicle is ' + '{:+.2f} m'.format(off_center) + ' left of center'
+    else:
+        message = 'Vehicle is ' + '{:+.2f} m'.format(off_center) + ' right of center'
 
     # adding required text onto the output images
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -105,14 +104,13 @@ def process_image(image1):
     cv2.putText(result,text1,(50,50),font,1,[255,255,255],2)
     text2 = 'Right line curvature: ' + '{:.0f}'.format(right_curvature) + 'm'
     cv2.putText(result,text2,(50,100),font,1,[255,255,255],2)
-    text3 = 'Off from center: ' + '{:.0f}'.format(off_center) + 'm'
-    cv2.putText(result,text3,(50,150),font,1,[255,255,255],2)
+    cv2.putText(result,message,(50,150),font,1,[255,255,255],2)
 
     return result
 
 left_lane = Line()
 right_lane = Line()
-white_output = 'output_video/project_video_output.mp4'
-clip1 = VideoFileClip("project_video.mp4").subclip(0,2)
-white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-white_clip.write_videofile(white_output, audio=False)
+video_output = 'output_video/project_video_output.mp4'
+clip1 = VideoFileClip("project_video.mp4")
+video_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+video_clip.write_videofile(video_output, audio=False)
