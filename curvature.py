@@ -87,22 +87,22 @@ def sliding_window(img):
 
     return left_x,left_y,right_x,right_y
 
-def draw_polylines(image):
+def get_polylines(image):
     '''Take in perspective transformed binary image and draw polynomial lines along lanes'''
     leftx,lefty,rightx,righty = sliding_window(image)
     # here x is to be found and y is the variable
     left = np.polyfit(lefty,leftx,2)
     right = np.polyfit(righty,rightx,2)
 
-    # let ploty be the variable
+    # # let ploty be the variable
     # ploty = np.linspace(0,image.shape[0]-1,image.shape[0])
     # try:
     #     left_line = left[0]*ploty**2 + left[1]*ploty + left[2]
     #     right_line = right[0]*ploty**2 + right[1]*ploty + right[2]
     # except TypeError:
     #     print('Function failed to fit a line')
-    #     left = ploty**2 + ploty
-    #     right = ploty**2 + ploty
+    #     left_line = ploty**2 + ploty
+    #     right_line = ploty**2 + ploty
 
     # out[lefty,leftx] = [255,0,0]
     # out[righty,rightx] = [0,0,255]
@@ -114,12 +114,14 @@ def draw_polylines(image):
 
 def cal_curvature(x_vals,y_vals,ploty):
 
-    x_m = 3.7/900
-    y_m = 15/720
+    x_m = 3.7/700
+    y_m = 30/720
     y_vals = y_vals[::-1]
-    fit_curve = np.polyfit(y_vals*y_m,x_vals*x_m,2)
-    y_eval = np.max(ploty)*y_m
-    # Calculation of R_curve (radius of curvature)
-    curverad = ((1 + (2*fit_curve[0]*y_eval + fit_curve[1])**2)**1.5)/np.absolute(2*fit_curve[0])
-
+    if len(x_vals) != 0:
+        fit_curve = np.polyfit(y_vals*y_m,x_vals*x_m,2)
+        y_eval = np.max(ploty)*y_m
+        # Calculation of R_curve (radius of curvature)
+        curverad = ((1 + (2*fit_curve[0]*y_eval + fit_curve[1])**2)**1.5)/np.absolute(2*fit_curve[0])
+    else:
+        curverad = 0
     return curverad
