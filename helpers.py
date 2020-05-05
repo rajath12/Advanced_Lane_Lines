@@ -9,7 +9,7 @@ def getTransformMatrices():
     x = 1280
     y = 720
     src = np.float32([[556,450],[685,450],[980,650],[295,650]]) # found coordinates using cv2 lines
-    offset = 250 
+    offset = 200 
     dest = np.float32([
                     [offset,0],
                     [x-offset,0],
