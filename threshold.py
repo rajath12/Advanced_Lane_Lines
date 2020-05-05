@@ -8,7 +8,7 @@ def gray_blur(image):
     '''Takes a undistorted image and returns a gray Gaussian blurred image'''
     gray = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
     blurred = cv2.GaussianBlur(gray,(5,5),cv2.BORDER_DEFAULT) # blur image
-    return blurred
+    return gray
 
 def sobel_calc(image,kernel_size=21):
     '''return the sobelx and sobely values'''
@@ -63,15 +63,17 @@ def color_thresh(image,thresh=(60,120)):
 
     hls = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
     s = hls[:,:,2] # s channel provides consistent results
+    h = hls[:,:,0]
+    hcopy = np.copy(h)
     copy = np.copy(s)
     copy[(s > thresh[0]) & (s <= thresh[1])] = 1
     return copy
 
 def combined_thresh(image):
     '''apply decided thresholds on the undistorted image to get binary output'''
-    img_color = color_thresh(image,(140,255)) # color threshold
-    img_mag = mag_thresh(image,(100,200)) # magnitude threshold
-    img_grad = grad_thresh(image,(0.7,1.1)) # gradient threshold
+    img_color = color_thresh(image,(160,255)) # color threshold
+    img_mag = mag_thresh(image,(50,255)) # magnitude threshold
+    img_grad = grad_thresh(image,(0.38,1.15)) # gradient threshold
     img_comb = np.zeros_like(img_grad)
     img_comb[((img_color == 1) | (img_mag == 1)) & (img_grad == 1)] = 1 # combined threshold
 
