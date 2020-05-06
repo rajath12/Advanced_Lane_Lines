@@ -7,6 +7,7 @@ from helpers import birdseye
 from threshold import combined_thresh
 
 def hist(image):
+
     '''take in a perspective transformed image and draw the histogram based on 
     lane lines found near the bottom'''
     bottom_half = image[(image.shape[0]-image.shape[0]//2):,:]
@@ -14,6 +15,7 @@ def hist(image):
     return hist
 
 def sliding_window(img):
+
     '''Takes in an undistorted image and returns sliding windows and x,y coordinates for drawing the lines '''
     image = combined_thresh(img)
     img1 = birdseye(image)
@@ -84,11 +86,13 @@ def sliding_window(img):
     left_y = nonzeroy[left_lane_inds]
     right_x = nonzerox[right_lane_inds]
     right_y = nonzeroy[right_lane_inds]
-
+    
     return left_x,left_y,right_x,right_y
 
 def get_polylines(image):
-    '''Take in perspective transformed binary image and draw polynomial lines along lanes'''
+    '''Take in undistorted image and draw polynomial lines along lanes. Returns the left and right 
+    lane polynomial coefficients'''
+
     leftx,lefty,rightx,righty = sliding_window(image)
     # here x is to be found and y is the variable
     left = np.polyfit(lefty,leftx,2)
@@ -113,9 +117,9 @@ def get_polylines(image):
     return left,right
 
 def cal_curvature(x_vals,y_vals,ploty):
-
-    x_m = 3.7/700
-    y_m = 30/720
+    '''Take in x and y coordinates and calculate curvature'''
+    x_m = 3.7/660
+    y_m = 14/720
     y_vals = y_vals[::-1]
     if len(x_vals) != 0:
         fit_curve = np.polyfit(y_vals*y_m,x_vals*x_m,2)
