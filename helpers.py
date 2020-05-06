@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 
 def getTransformMatrices():
+    '''Get perspective transform matrix for use in the pipeline '''
     # source points from undistorted image and destination points
     x = 1280
     y = 720
@@ -16,12 +17,11 @@ def getTransformMatrices():
                     [x-offset,y],
                     [offset,y]])
     M = cv2.getPerspectiveTransform(src,dest) # perspective matrix
-    Minv = np.linalg.inv(M)
-    return M, Minv
+    return M
 
 def birdseye(image):
     ''' Takes in an undistorted image and returns the unwarped image'''    
-    M,Minv = getTransformMatrices()
+    M = getTransformMatrices()
     img_size = (image.shape[1],image.shape[0]) # be wary of this variable during implementation
     warped = cv2.warpPerspective(image,M,img_size) # birds-eye view
     # dst = cv2.line(dst,(980,650),(295,650),[255,0,0],thickness = 2) # use for debugging coordinates
