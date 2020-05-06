@@ -15,9 +15,8 @@ from threshold import combined_thresh
 from line_class import Line
 
 def process_image(image1):
-    '''draw on original image'''
-    with open('camera_cal.pickle','rb') as input_file:
-        mtx,dist = pickle.load(input_file)
+    '''Process the raw image and return an image with lane tracked, curvature and off center info'''
+    global mtx,dist,M,Minv
 
     # image1 = mpimg.imread(image) # read in image
     image2 = cv2.undistort(image1, mtx, dist, None, mtx) # undistort image
@@ -70,23 +69,20 @@ def process_image(image1):
     # draw edge lines of the polyfit lines
     cv2.polylines(color_warp, np.int32([pts_left]), isClosed=False, color=(255,0,0), thickness=5)
     cv2.polylines(color_warp, np.int32([pts_right]), isClosed=False, color=(255,0,0), thickness=5)
-    # get Minv matrix for converting perspective transformed image
-    M,Minv = getTransformMatrices()
     # Warp the blank back to original image space using inverse perspective matrix
     newwarp = cv2.warpPerspective(color_warp, Minv, (image2.shape[1], image2.shape[0])) 
     # Combine the result with the original image
     result = cv2.addWeighted(new_img, 1, newwarp, 0.5, 0)
 
     # calculate vehicle position from center
-    x_max = new_img.shape[1] * 3.7/700
+    x_max = new_img.shape[1]
     expected_center = x_max/2
-    y_max = y_max * 30/720
-    # calculate image value at the bottom of the image
-    leftvalue = left_fit[0]*y_max**2 + left_fit[1]*y_max + left_fit[2]
-    rightvalue = right_fit[0]*y_max**2 + right_fit[1]*y_max + right_fit[2]
-    veh_center = leftvalue + ((rightvalue - leftvalue)/2)
-    off_center = veh_center - expected_center
-    print(x_max,y_max,expected_center,off_center)
+    veh_center = (left_fit[-1] + right_fit[-1])/2
+    off_center = (veh_center - expected_center) * 3.7/660
+    if off_center < 0:
+        message = 'Vehicle is ' + '{:+.2f} m'.format(off_center) + ' left of center'
+    else:
+        message = 'Vehicle is ' + '{:+.2f} m'.format(off_center) + ' right of center'
 
     # adding required text onto the output images
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -94,8 +90,7 @@ def process_image(image1):
     cv2.putText(result,text1,(50,50),font,1,[255,255,255],2)
     text2 = 'Right line curvature: ' + '{:.0f}'.format(right_curvature) + 'm'
     cv2.putText(result,text2,(50,100),font,1,[255,255,255],2)
-    text3 = 'Off from center: ' + '{:.0f}'.format(off_center) + 'm'
-    cv2.putText(result,text3,(50,150),font,1,[255,255,255],2)
+    cv2.putText(result,message,(50,150),font,1,[255,255,255],2)
 
     return result
 
@@ -107,6 +102,12 @@ for image in glob.glob('./test_images/*.jpg'):
     image1 = mpimg.imread(image) # read in image
     test_images.append(image1)
 
+# initial variables needed
+with open('camera_cal.pickle','rb') as input_file:
+    mtx,dist = pickle.load(input_file)
+M = getTransformMatrices()
+Minv = np.linalg.inv(M)
+# initializing lines
 left_lane = Line()
 right_lane = Line()
 image = test_images[5]
