@@ -1,17 +1,4 @@
-# TO-DO: find curvature value, anti-birdseye view conversion, video generation
-
 # Advanced Lane-Lines project for Self driving car Nanodegree
-'''PIPELINE:
-            1.Camera calibration
-            2.Undistort images
-            3.Thresholding
-            4.convert to 2D
-            5.sliding point tracking and curvature
-            6.Conversion back to regular image
-            
-    After this, apply pipeline to video'''
-
-
 import io
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -26,9 +13,9 @@ from moviepy.editor import VideoFileClip
 from line_class import Line
 
 def process_image(image1):
-    '''draw on original image'''
-    with open('camera_cal.pickle','rb') as input_file:
-        mtx,dist = pickle.load(input_file)
+    '''Process the raw image and return an image with lane tracked, curvature and off center info'''
+
+    global mtx,dist,M,Minv
 
     # image1 = mpimg.imread(image) # read in image
     image2 = cv2.undistort(image1, mtx, dist, None, mtx) # undistort image
@@ -81,8 +68,6 @@ def process_image(image1):
     # draw edge lines of the polyfit lines
     cv2.polylines(color_warp, np.int32([pts_left]), isClosed=False, color=(255,0,0), thickness=5)
     cv2.polylines(color_warp, np.int32([pts_right]), isClosed=False, color=(255,0,0), thickness=5)
-    # get Minv matrix for converting perspective transformed image
-    M,Minv = getTransformMatrices()
     # Warp the blank back to original image space using inverse perspective matrix
     newwarp = cv2.warpPerspective(color_warp, Minv, (image2.shape[1], image2.shape[0])) 
     # Combine the result with the original image
@@ -108,8 +93,15 @@ def process_image(image1):
 
     return result
 
+# initial variables needed
+with open('camera_cal.pickle','rb') as input_file:
+    mtx,dist = pickle.load(input_file)
+M = getTransformMatrices()
+Minv = np.linalg.inv(M)
+# initializing lines
 left_lane = Line()
 right_lane = Line()
+# video processing and saving
 video_output = 'output_video/project_video_output.mp4'
 clip1 = VideoFileClip("project_video.mp4")
 video_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
