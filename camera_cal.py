@@ -7,13 +7,14 @@ import numpy as np
 import pickle
 
 def calibrate_camera():
+    '''use calibration images to automatically calculate the undistortion coefficients'''
     # initialzing
     imgpoints = [] # 2d image world
     objpoints = [] # 3d image world
     objp = np.zeros((6*9,3), np.float32) # size of array is 9 by 6
     objp[:,:2] = np.mgrid[0:9,0:6].T.reshape(-1,2) # x and y coordinates
     cal_set = []
-    for image in glob.glob('./camera_cal/calibration*.jpg'):
+    for image in glob.glob('./camera_cal/calibration*.jpg'): # folder path
         n = mpimg.imread(image)
         cal_set.append(n)
         img = np.copy(n)
